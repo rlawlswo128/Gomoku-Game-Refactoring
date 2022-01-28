@@ -54,6 +54,7 @@ namespace Client
             this.playButton.TabIndex = 1;
             this.playButton.Text = "게임 시작";
             this.playButton.UseVisualStyleBackColor = true;
+            this.playButton.Click += new System.EventHandler(this.playButton_Click);
             // 
             // status
             // 
