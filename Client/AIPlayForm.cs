@@ -23,8 +23,8 @@ namespace Client
         private int targetX, targetY;
         private int limit = 1;
         private bool playing = false;
-        
-        private bool judge() // 승리 판정함수
+
+        private bool judge() // 승리 판정 함수
         {
             for (int i = 0; i < edgeCount - 4; i++) // 가로
                 for (int j = 0; j < edgeCount; j++)
@@ -51,15 +51,12 @@ namespace Client
 
         private void refresh()
         {
-            // 전체 Board 정보를 초기화 합니다.
-            for(int i = 0; i < edgeCount; i++)
-            {
+            // 전체 Board 정보를 초기화합니다.
+            for (int i = 0; i < edgeCount; i++)
                 for (int j = 0; j < edgeCount; j++)
                     board[i, j] = Horse.none;
-            }
-
             this.boardPicture.Refresh();
-            // AI와 가용자 중에서 먼저 공격할 사람을 구합니다.
+            // AI와 사용자 중에서 먼저 공격할 사람을 구합니다.
             int rand = new Random().Next(1, 3);
             if (rand == 1) aiPlayer = Horse.BLACK;
             else aiPlayer = Horse.WHITE;
@@ -69,51 +66,27 @@ namespace Client
             else status.Text = "게임이 시작되었습니다.";
         }
 
+        private void playButton_Click(object sender, EventArgs e)
+        {
+            if (!playing)
+            {
+                refresh();
+                playing = true;
+                playButton.Text = "재시작";
+            }
+            else
+            {
+                refresh();
+            }
+            if (nowPlayer == aiPlayer)
+            {
+                ai_Attack();
+            }
+        }
+
         public AIPlayForm()
         {
             InitializeComponent();
-        }
-
-        private void boardPicture_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (nowPlayer == aiPlayer) return;
-            if(!playing)
-            {
-                MessageBox.Show("게임을 실행해주세요.");
-                return;
-            }
-            Graphics g = this.boardPicture.CreateGraphics();
-            int x = e.X / rectSize;
-            int y = e.Y / rectSize;
-            if(x < 0 || y < 0 || x >= edgeCount || y >= edgeCount)
-            {
-                MessageBox.Show("테두리를 벗어날 수 없습니다.");
-                return;
-            }
-            if (board[x, y] != Horse.none) return;
-            board[x, y] = nowPlayer;
-            if(nowPlayer == Horse.BLACK)
-            {
-                SolidBrush brush = new SolidBrush(Color.Black);
-                g.FillEllipse(brush, x * rectSize, y * rectSize, rectSize, rectSize);
-            }
-            else
-            {
-                SolidBrush brush = new SolidBrush(Color.White);
-                g.FillEllipse(brush, x * rectSize, y * rectSize, rectSize, rectSize);
-            }
-            if(judge())
-            {
-                if (nowPlayer == aiPlayer) status.Text = "AI 플레이어의 승리입니다.";
-                else status.Text = "당신의 승리입니다.";
-                playing = false;
-                playButton.Text = "게임 시작";
-            } 
-            else
-            {
-                nowPlayer = ((nowPlayer == Horse.BLACK) ? Horse.WHITE : Horse.BLACK);
-                ai_Attack();
-            }
         }
 
         private void boardPicture_Paint(object sender, PaintEventArgs e)
@@ -136,7 +109,7 @@ namespace Client
 
         private void ai_Attack()
         {
-            AlphaBetaPruning(0, -100000, 1000000);
+            AlphaBetaPruning(0, -1000000, 1000000);
             board[targetX, targetY] = aiPlayer;
             Graphics g = this.boardPicture.CreateGraphics();
             if (nowPlayer == Horse.BLACK)
@@ -149,7 +122,7 @@ namespace Client
                 SolidBrush brush = new SolidBrush(Color.White);
                 g.FillEllipse(brush, targetX * rectSize, targetY * rectSize, rectSize, rectSize);
             }
-            if(judge())
+            if (judge())
             {
                 if (nowPlayer == aiPlayer) status.Text = "AI 플레이어의 승리입니다.";
                 else status.Text = "당신의 승리입니다.";
@@ -162,20 +135,44 @@ namespace Client
             }
         }
 
-        private void playButton_Click(object sender, EventArgs e)
+        private void boardPicture_MouseDown(object sender, MouseEventArgs e)
         {
-            if(!playing)
+            if (nowPlayer == aiPlayer) return;
+            if (!playing)
             {
-                refresh();
-                playing = true;
-                playButton.Text = "재시작";
+                MessageBox.Show("게임을 실행해주세요.");
+                return;
+            }
+            Graphics g = this.boardPicture.CreateGraphics();
+            int x = e.X / rectSize;
+            int y = e.Y / rectSize;
+            if (x < 0 || y < 0 || x >= edgeCount || y >= edgeCount)
+            {
+                MessageBox.Show("테두리를 벗어날 수 없습니다.");
+                return;
+            }
+            if (board[x, y] != Horse.none) return;
+            board[x, y] = nowPlayer;
+            if (nowPlayer == Horse.BLACK)
+            {
+                SolidBrush brush = new SolidBrush(Color.Black);
+                g.FillEllipse(brush, x * rectSize, y * rectSize, rectSize, rectSize);
             }
             else
             {
-                refresh();
+                SolidBrush brush = new SolidBrush(Color.White);
+                g.FillEllipse(brush, x * rectSize, y * rectSize, rectSize, rectSize);
             }
-            if(nowPlayer == aiPlayer)
+            if (judge())
             {
+                if (nowPlayer == aiPlayer) status.Text = "AI 플레이어의 승리입니다.";
+                else status.Text = "당신의 승리입니다.";
+                playing = false;
+                playButton.Text = "게임시작";
+            }
+            else
+            {
+                nowPlayer = ((nowPlayer == Horse.BLACK) ? Horse.WHITE : Horse.BLACK);
                 ai_Attack();
             }
         }
